@@ -130,7 +130,7 @@
       100% { transform: translateY(0px); }
     }
   
-@media (max-width: 1920px) {
+@media (max-width: 2400px) {
 
   #map {
     height: 60vh;
@@ -147,12 +147,12 @@
 
       width: calc(40% - 8dpx);
       min-width: 200px;
-      padding: 4px;
+      padding: 2px;
       background-color: #f5f5f5;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: clamp(10px, 1vw, 14px);
-      height: 20%;
+      height: 25%;
       box-sizing: border-box;
     }
   
@@ -163,8 +163,11 @@
     width: 100%;
   }
   .drop-zone {
-    margin: 0 0 8px 0;
-    height: 45%;
+    margin: 0 0 48px 0;
+    height: 25%;
+  }
+      #names-column {
+      background-color: rgba(255,255,255,0.85);
   }
   .leaflet-control-attribution {
     display: none;
@@ -195,10 +198,10 @@ const map = L.map('map', {
   <script>
     const philosophers = [
       { name: "Platon", quote: "Platon 	Felsefe, gerçekliğin hakiki doğasını kavramak, tek tek şeylerin ne için olduğunu bilmektir. ", coords: [37.5838, 23.7275], city: "Atina", img: "img/plato.jpeg" },
-      { name: "Aristoteles", quote: "Felsefe, evrensel olanın bilimidir.", coords: [41.63, 23.7], city: "Stageira", img: "img/aristo.jpeg" },
-      { name: "El-Kindi", quote: "El-Kindi 	Felsefe, insanın gücü ölçüsünde “ebedî ve külli varlıkların” hakikatini, mahiyetini ve sebeplerini bilmesidir. ", coords: [32.03, 44.28], city: "Kûfe", img: "img/elkindi.jpg" },
+      { name: "Aristoteles", quote: "Felsefe, evrensel olanın bilimidir.", coords: [43.63, 23.7], city: "Stageira", img: "img/aristo.jpeg" },
+      { name: "El-Kindi", quote: "El-Kindi 	Felsefe, insanın gücü ölçüsünde “ebedî ve külli varlıkların” hakikatini, mahiyetini ve sebeplerini bilmesidir. ", coords: [34.03, 44.28], city: "Kûfe", img: "img/elkindi.jpg" },
       { name: "Farabi", quote: "Farabi	Felsefe, varlıkların oldukları hâliyle insan nefsinde kesin bilgiye dayalı olarak oluşmuş ilmidir. ", coords: [40.8, 68.7], city: "Otrar", img: "img/farabi.jpg" },
-      { name: "İbni Sina", quote: "İbni Sina 	Felsefenin amacı, insanın bilme gücü ölçüsünde bütün şeylerin hakikatlerine vakıf olmaktır. ", coords: [39.7667, 64.4167], city: "Afşene", img: "img/ibnisina.jpeg" },
+      { name: "İbni Sina", quote: "İbni Sina 	Felsefenin amacı, insanın bilme gücü ölçüsünde bütün şeylerin hakikatlerine vakıf olmaktır. ", coords: [39.7667, 63.4167], city: "Afşene", img: "img/ibnisina.jpeg" },
       { name: "René Descartes", quote: "Felsefe, ilk nedenleri ve ilkeleri aramaktır.", coords: [47.0, 0.72], city: "Fransa", img: "img/descartes.jpeg" },
       { name: "Immanuel Kant", quote: "Immanuel Kant 	Felsefe, kendini akla dayalı nedenlerle meşru kılmak ve haklı çıkarmak iddiasında olan bir zihinsel etkinliktir. ", coords: [54.7104, 20.4522], city: "Kaliningrad", img: "img/kant.jpeg" },
       { name: "Karl Jaspers", quote: "Karl Jaspers 	Felsefe, yolda olmak demektir. ", coords: [53.1439, 8.2146], city: "Oldenburg", img: "img/karl.jpg" }
