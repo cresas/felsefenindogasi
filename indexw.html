@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Filozoflar Haritası</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    #map {
+      height: 70vh;
+      width: 100vw;
+    }
+    #drag-area {
+      height: 30vh;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: linear-gradient(to bottom, #c2c2a3, #e0e0d1);
+      padding: 8px;
+      gap: 8px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      touch-action: none;
+    }
+    #quotes-column, #names-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      max-height: 100%;
+    }
+    #names-column {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-content: flex-start;
+    }
+    .quote-box {
+      display: flex;
+      align-items: center;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: clamp(10px, 1vw, 14px);
+      flex-wrap: wrap;
+    }
+    .drop-zone {
+      width: 120px;
+      height: 24px;
+      border: 1px dashed #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(10px, 1vw, 14px);
+      font-weight: bold;
+      background-color: #fff;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .quote-text {
+      margin-left: 6px;
+      font-size: clamp(10px, 1vw, 13px);
+      flex: 1;
+    }
+    .draggable {
+      max-width: 140px;
+      padding: 4px 6px;
+      background-color: #e0e0e0;
+      border: 1px dashed #444;
+      font-size: clamp(10px, 1.2vw, 14px);
+      border-radius: 4px;
+      cursor: grab;
+      user-select: none;
+      margin: 2px;
+      flex-shrink: 0;
+      touch-action: none;
+    }
+    .city-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #b30000;
+      text-shadow: 1px 1px 2px #fff;
+      background-color: rgba(255,255,255,0.85);
+      padding: 2px 6px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .philosopher-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: float 2s infinite;
+      position: relative;
+    }
+    .philosopher-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      box-shadow: 0 0 4px #000;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+    .leaflet-control-attribution,
+    .leaflet-control-container .leaflet-bottom {
+      display: none !important;
+    }
+    @media (max-width: 768px) {
+      #drag-area {
+        flex-direction: column;
+        height: auto;
+        max-height: 30vh;
+        overflow-x: auto;
+      }
+      #quotes-column, #names-column {
+        flex: 1;
+        max-height: 50%;
+        overflow-y: auto;
+      }
+      #names-column {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .quote-box, .drop-zone, .draggable {
+        font-size: 12px;
+        padding: 2px;
+      }
+      .drop-zone {
+        width: 100px;
+        height: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="drag-area">
+    <div id="quotes-column"></div>
+    <div id="names-column"></div>
+  </div>
+  <script>
+    const philosophers = [
+      { name: "Platon", quote: "Felsefe, gerçekliğin hakiki doğasını kavramak...", coords: [37.5838, 23.7275], city: "Atina", img: "img/plato.jpeg" },
+      { name: "Aristoteles", quote: "Felsefe, evrensel olanın bilimidir.", coords: [41.63, 23.7], city: "Stageira", img: "img/aristo.jpeg" },
+      { name: "El-Kindi", quote: "Felsefe, insanın gücü ölçüsünde...", coords: [32.03, 44.28], city: "Kûfe", img: "img/elkindi.jpg" },
+      { name: "Farabi", quote: "Varlıkların oldukları hâliyle...", coords: [40.8, 68.7], city: "Otrar", img: "img/farabi.jpg" },
+      { name: "İbni Sina", quote: "Felsefenin amacı, insanın bilme gücü...", coords: [39.7667, 64.4167], city: "Afşene", img: "img/ibnisina.jpeg" },
+      { name: "René Descartes", quote: "Felsefe, ilk nedenleri ve ilkeleri aramaktır.", coords: [47.0, 0.72], city: "Fransa", img: "img/descartes.jpeg" },
+      { name: "Immanuel Kant", quote: "Felsefe, kendini akla dayalı nedenlerle...", coords: [54.7104, 20.4522], city: "Kaliningrad", img: "img/kant.jpeg" },
+      { name: "Karl Jaspers", quote: "Felsefe, yolda olmak demektir.", coords: [53.1439, 8.2146], city: "Oldenburg", img: "img/karl.jpg" }
+    ];
+
+    const map = L.map('map', {
+      center: [47, 42],
+      zoom: 4,
+      minZoom: 4,
+      maxZoom: 8,
+      maxBounds: [[-90, -180], [90, 180]],
+      maxBoundsViscosity: 1.0
+    });
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      noWrap: true,
+      continuousWorld: false
+    }).addTo(map);
+
+    const quotesColumn = document.getElementById('quotes-column');
+    const namesColumn = document.getElementById('names-column');
+
+    const shuffled = philosophers.map(p => p.name).sort(() => Math.random() - 0.5);
+
+    philosophers.forEach((phil, index) => {
+      const quoteDiv = document.createElement('div');
+      quoteDiv.className = 'quote-box';
+
+      const dropZone = document.createElement('div');
+      dropZone.className = 'drop-zone';
+      dropZone.dataset.philosopher = phil.name;
+
+      const quoteText = document.createElement('div');
+      quoteText.className = 'quote-text';
+      quoteText.textContent = phil.quote;
+
+      quoteDiv.appendChild(dropZone);
+      quoteDiv.appendChild(quoteText);
+      quotesColumn.appendChild(quoteDiv);
+
+      const drag = document.createElement('div');
+      drag.className = 'draggable';
+      drag.setAttribute('draggable', 'true');
+      drag.textContent = shuffled[index];
+      drag.dataset.philosopher = shuffled[index];
+      namesColumn.appendChild(drag);
+
+      drag.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', drag.dataset.philosopher);
+      });
+
+      enableTouchDrag(drag);
+    });
+
+    philosophers.forEach(phil => {
+      const markerDiv = document.createElement('div');
+      markerDiv.className = 'philosopher-wrapper';
+      markerDiv.id = phil.name;
+      markerDiv.style.display = 'none';
+      markerDiv.innerHTML = `
+        <img src="${phil.img}" class="philosopher-icon" />
+        <div class="city-label">${phil.city}</div>
+      `;
+
+      const icon = L.divIcon({ html: markerDiv.outerHTML, className: '', iconSize: [80, 100] });
+
+      L.marker(phil.coords, { icon }).addTo(map)
+        .on('click', () => {
+          L.popup()
+            .setLatLng(phil.coords)
+            .setContent(`<strong>${phil.name}</strong><br>${phil.city}<br>${phil.quote}<br><img src="${phil.img}" width="100">`)
+            .openOn(map);
+        });
+    });
+
+    quotesColumn.addEventListener('dragover', e => {
+      if (e.target.classList.contains('drop-zone')) e.preventDefault();
+    });
+
+    quotesColumn.addEventListener('drop', e => {
+      if (e.target.classList.contains('drop-zone')) {
+        e.preventDefault();
+        const name = e.dataTransfer.getData('text/plain');
+        const correct = e.target.dataset.philosopher;
+        if (name === correct) {
+          const dragged = document.querySelector(`.draggable[data-philosopher='${name}']`);
+          e.target.textContent = name;
+          e.target.style.border = '2px solid green';
+          dragged.style.pointerEvents = 'none';
+          dragged.style.opacity = 0.6;
+          document.getElementById(name).style.display = 'flex';
+        } else {
+          e.target.style.border = '2px solid red';
+          setTimeout(() => {
+            e.target.style.border = '1px dashed #444';
+          }, 1000);
+        }
+      }
+    });
+
+    function enableTouchDrag(el) {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let clone = null;
+
+      el.addEventListener('touchstart', function (e) {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        clone = el.cloneNode(true);
+        clone.style.position = 'fixed';
+        clone.style.top = `${touchStartY}px`;
+        clone.style.left = `${touchStartX}px`;
+        clone.style.pointerEvents = 'none';
+        clone.style.opacity = '0.7';
+        clone.style.zIndex = 9999;
+        document.body.appendChild(clone);
+        el.classList.add('dragging');
+      });
+
+      el.addEventListener('touchmove', function (e) {
+        if (clone) {
+          const touch = e.touches[0];
+          clone.style.top = `${touch.clientY}px`;
+          clone.style.left = `${touch.clientX}px`;
+        }
+      });
+
+      el.addEventListener('touchend', function (e) {
+        if (clone) {
+          const touch = e.changedTouches[0];
+          const dropZones = document.querySelectorAll('.drop-zone');
+          for (const dz of dropZones) {
+            const rect = dz.getBoundingClientRect();
+            if (touch.clientX >= rect.left && touch.clientX <= rect.right && touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+              const name = el.dataset.philosopher;
+              const correct = dz.dataset.philosopher;
+              if (name === correct) {
+                dz.textContent = name;
+                dz.style.border = '2px solid green';
+                el.style.pointerEvents = 'none';
+                el.style.opacity = 0.6;
+                const marker = document.getElementById(name);
+                if (marker) marker.style.display = 'flex';
+              } else {
+                dz.style.border = '2px solid red';
+                setTimeout(() => dz.style.border = '1px dashed #444', 1000);
+              }
+              break;
+            }
+          }
+          document.body.removeChild(clone);
+          clone = null;
+          el.classList.remove('dragging');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
