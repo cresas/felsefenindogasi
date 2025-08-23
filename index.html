@@ -6,17 +6,9 @@
   <title>Filozoflar Haritası</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
- <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      font-family: sans-serif;
-      overflow: hidden;
-    }
-    #map {
-      height: 70vh;
-      width: 100vw;
-    }
+  <style>
+    html, body { margin: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+    #map { height: 70vh; width: 100vw; }
     #drag-area {
       height: 30vh;
       display: flex;
@@ -40,7 +32,6 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-
       width: calc(30% - 16px);
       min-width: 200px;
       padding: 5px;
@@ -65,17 +56,14 @@
     }
     .quote-text {
       flex: 1;
-      font-size: clamp(10px, 1vw, 13px);
+      font-size: clamp(14px, 1vw, 13px);
     }
-       .leaflet-control-attribution {
-      display: none;
-    }
-     #names-column {
+    .leaflet-control-attribution { display: none; }
+    #names-column {
       order: -1;
       position: sticky;
       top: 0;
       z-index: 10;
-  
       padding: 6px 0;
       display: flex;
       flex-wrap: wrap;
@@ -88,20 +76,20 @@
       padding: 14px 6px;
       background-color: #e0e0e0;
       border: 1px dashed #444;
-      font-size: clamp(10px, 1.2vw, 14px);
+      font-size: clamp(14px, 1.2vw, 14px);
       border-radius: 4px;
       cursor: grab;
       user-select: none;
       touch-action: none;
     }
-	  .philosopher-icon {
-    width: 60px;
-    height: auto;
-    border-radius: 50%;
-    border: 2px solid #444;
-  }
-
-.city-label {
+    .philosopher-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      box-shadow: 0 0 4px #000;
+      border: 2px solid #444;
+    }
+    .city-label {
       font-size: 14px;
       font-weight: bold;
       color: #b30000;
@@ -118,84 +106,41 @@
       animation: float 2s infinite;
       position: relative;
     }
-    .philosopher-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      box-shadow: 0 0 4px #000;
-    }
-	    @keyframes float {
+    @keyframes float {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-5px); }
       100% { transform: translateY(0px); }
     }
-  
-@media (max-width: 2400px) {
-
-  #map {
-    height: 60vh;
-    width: 100vw;
-  }
-  #drag-area {
-    height: 40vh;
-  }
+    @media (max-width: 2400px) {
+      #map { height: 60vh; width: 100vw; }
+      #drag-area { height: 40vh; }
       .quote-box {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-
-      width: calc(40% - 8dpx);
-      min-width: 200px;
-      padding: 2px;
-      background-color: #f5f5f5;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: clamp(10px, 1vw, 14px);
-      height: 25%;
-      box-sizing: border-box;
+        width: calc(40% - 8dpx);
+        min-width: 200px;
+        padding: 2px;
+        font-size: clamp(10px, 1vw, 14px);
+        height: 25%;
+      }
     }
-  
-}
-@media (max-width: 768px) {
-  .quote-box {
-    flex-direction: column;
-    width: 100%;
-  }
-  .drop-zone {
-    margin: 0 0 48px 0;
-    height: 25%;
-  }
-      #names-column {
-      background-color: rgba(255,255,255,0.85);
-  }
-  .leaflet-control-attribution {
-    display: none;
-  }
-}
-
-
-	<script >
-const map = L.map('map', {
-  center: window.innerWidth < 768 ? [12, 42] : [47, 42],
-  zoom: window.innerWidth < 768 ? 2 : 4,
-  minZoom: 2,
-  maxZoom: 8,
-  maxBounds: [[-90, -180], [90, 180]],
-  maxBoundsViscosity: 1.0
-});
-	</script>
-	
+    @media (max-width: 768px) {
+      .quote-box { flex-direction: column; width: 100%; }
+      .drop-zone { margin: 0 0 48px 0; height: 25%; }
+      #names-column { background-color: rgba(255,255,255,0.85); }
+      .leaflet-control-attribution { display: none; }
     }
   </style>
 </head>
 <body>
+  <!-- SES DOSYALARI -->
+  <audio id="audio-true" src="true.mp3"></audio>
+  <audio id="audio-wrong" src="wrong.mp3"></audio>
   <div id="map"></div>
   <div id="drag-area">
     <div id="quotes-column"></div>
     <div id="names-column"></div>
   </div>
   <script>
+    // Filozof verileri
     const philosophers = [
       { name: "Platon", quote: "Felsefe, gerçekliğin hakiki doğasını kavramak, tek tek şeylerin ne için olduğunu bilmektir.", coords: [37.5838, 23.7275], city: "Atina", img: "img/plato.jpeg" },
       { name: "Aristoteles", quote: "Felsefe, evrensel olanın bilimidir.", coords: [43.63, 23.7], city: "Stageira", img: "img/aristo.jpeg" },
@@ -207,9 +152,14 @@ const map = L.map('map', {
       { name: "Karl Jaspers", quote: "Felsefe, yolda olmak demektir.", coords: [53.1439, 8.2146], city: "Oldenburg", img: "img/karl.jpg" }
     ];
 
+    // SES dosyaları
+    const audioTrue = document.getElementById('audio-true');
+    const audioWrong = document.getElementById('audio-wrong');
+
+    // Harita
     const map = L.map('map', {
-      center: [47, 42],
-      zoom: 4,
+      center: window.innerWidth < 768 ? [12, 42] : [47, 42],
+      zoom: window.innerWidth < 768 ? 2 : 4,
       minZoom: 4,
       maxZoom: 8,
       maxBounds: [[-90, -180], [90, 180]],
@@ -224,9 +174,11 @@ const map = L.map('map', {
     const quotesColumn = document.getElementById('quotes-column');
     const namesColumn = document.getElementById('names-column');
 
+    // İsimleri karıştır
     const shuffled = philosophers.map(p => p.name).sort(() => Math.random() - 0.5);
 
     philosophers.forEach((phil, index) => {
+      // Alıntı kutusu ve dropzone
       const quoteDiv = document.createElement('div');
       quoteDiv.className = 'quote-box';
 
@@ -242,6 +194,7 @@ const map = L.map('map', {
       quoteDiv.appendChild(quoteText);
       quotesColumn.appendChild(quoteDiv);
 
+      // Sürüklenebilir isimler
       const drag = document.createElement('div');
       drag.className = 'draggable';
       drag.setAttribute('draggable', 'true');
@@ -256,6 +209,7 @@ const map = L.map('map', {
       enableTouchDrag(drag);
     });
 
+    // Markerlar
     philosophers.forEach(phil => {
       const markerDiv = document.createElement('div');
       markerDiv.className = 'philosopher-wrapper';
@@ -265,7 +219,6 @@ const map = L.map('map', {
         <img src="${phil.img}" class="philosopher-icon" />
         <div class="city-label">${phil.city}</div>
       `;
-
       const icon = L.divIcon({ html: markerDiv.outerHTML, className: '', iconSize: [80, 100] });
 
       L.marker(phil.coords, { icon }).addTo(map)
@@ -277,6 +230,7 @@ const map = L.map('map', {
         });
     });
 
+    // Mouse ile sürükle bırak
     quotesColumn.addEventListener('dragover', e => {
       if (e.target.classList.contains('drop-zone')) e.preventDefault();
     });
@@ -290,11 +244,19 @@ const map = L.map('map', {
           const dragged = document.querySelector(`.draggable[data-philosopher='${name}']`);
           e.target.textContent = name;
           e.target.style.border = '2px solid green';
-          dragged.style.pointerEvents = 'none';
-          dragged.style.opacity = 0.6;
+          if (dragged) {
+            dragged.style.pointerEvents = 'none';
+            dragged.style.opacity = 0.6;
+          }
           document.getElementById(name).style.display = 'flex';
+          // SES: Doğru
+          audioTrue.currentTime = 0;
+          audioTrue.play();
         } else {
           e.target.style.border = '2px solid red';
+          // SES: Yanlış
+          audioWrong.currentTime = 0;
+          audioWrong.play();
           setTimeout(() => {
             e.target.style.border = '1px dashed #444';
           }, 1000);
@@ -302,6 +264,7 @@ const map = L.map('map', {
       }
     });
 
+    // Mobil dokunmatik için
     function enableTouchDrag(el) {
       let touchStartX = 0;
       let touchStartY = 0;
@@ -346,8 +309,14 @@ const map = L.map('map', {
                 el.style.opacity = 0.6;
                 const marker = document.getElementById(name);
                 if (marker) marker.style.display = 'flex';
+                // SES: Doğru
+                audioTrue.currentTime = 0;
+                audioTrue.play();
               } else {
                 dz.style.border = '2px solid red';
+                // SES: Yanlış
+                audioWrong.currentTime = 0;
+                audioWrong.play();
                 setTimeout(() => dz.style.border = '1px dashed #444', 1000);
               }
               break;
@@ -359,8 +328,6 @@ const map = L.map('map', {
         }
       });
     }
-	
   </script>
 </body>
 </html>
-
